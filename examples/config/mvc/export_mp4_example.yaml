@@ -6,6 +6,7 @@ scene:
 view:
   CAMERA_POS: [2.0, 0.7, 8.0]
   CAMERA_FWD: [0.0, 0.5, 8.0]
+  USE_MESA: True
 controller:
   MODE: video_render
   OUTPUT_VIDEO_PATH: ./video.mp4
