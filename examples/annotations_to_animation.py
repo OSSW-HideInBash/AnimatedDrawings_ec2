@@ -31,6 +31,7 @@ def annotations_to_animation(char_anno_dir: str, motion_cfg_fn: str, retarget_cf
             'OUTPUT_VIDEO_PATH': str(Path(char_anno_dir, 'video.gif').resolve())},  # set the output location
         'view': {
             'VIEW_TYPE': 'headless',  # 'mesa' or 'headless'
+            'VIEWER_TYPE': 'headless',  # 'headless' or 'mesa'
             'WINDOW_DIMENSIONS': [640, 480],  # set the window dimensions
             'BACKGROUND_IMAGE': None,  # set the background image
             'CAMERA_POS': [0.0, 1.0, 5.0],  # set the camera position

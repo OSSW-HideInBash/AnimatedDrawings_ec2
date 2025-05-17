@@ -12,6 +12,8 @@ view:
   USE_MESA: True
   CAMERA_POS: [0.0, 0.7, 2.0]
   CAMERA_FWD: [0.0, 0.5, 2.0]
+  DRAW_AD_RIG: True  # 일단 캐릭터 뼈대라도 보여지는지 확인
+
 controller:
   MODE: 'interactive'
   KEYBOARD_TIMESTEP: 0.0333  # only used if mode is 'interactive'
