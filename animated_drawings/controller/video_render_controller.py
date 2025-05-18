@@ -15,6 +15,9 @@ import numpy.typing as npt
 import cv2
 from OpenGL import GL
 from tqdm import tqdm
+import os
+
+os.environ["PYOPENGL_PLATFORM"] = "osmesa"
 
 from animated_drawings.controller.controller import Controller
 from animated_drawings.model.scene import Scene
@@ -100,6 +103,11 @@ class VideoRenderController(Controller):
         GL.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, 0)
         GL.glReadPixels(0, 0, self.video_width, self.video_height, GL.GL_BGRA, GL.GL_UNSIGNED_BYTE, self.frame_data)
         self.video_writer.process_frame(self.frame_data[::-1, :, :].copy())
+
+        # DEBUG: Save the first frame as PNG to inspect
+        if self.frames_rendered == 0:
+            import imageio
+            imageio.imwrite("debug_frame.png", self.frame_data[::-1, :, :])
 
         # update our counts and progress_bar
         self.frames_left_to_render -= 1
