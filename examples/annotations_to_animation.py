@@ -8,6 +8,8 @@ from pathlib import Path
 import sys
 import yaml
 from pkg_resources import resource_filename
+import os
+os.environ["PYOPENGL_PLATFORM"] = "osmesa"  # or "osmesa" if EGL isn’t available
 
 
 def annotations_to_animation(char_anno_dir: str, motion_cfg_fn: str, retarget_cfg_fn: str):

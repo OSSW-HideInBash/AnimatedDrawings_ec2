@@ -10,6 +10,9 @@ import os
 import sys
 import yaml
 
+os.environ["PYOPENGL_PLATFORM"] = "osmesa"  # or "osmesa" if EGL isn’t available
+
+
 global cfg_path
 global char_folder
 app = Flask(__name__, template_folder=os.path.abspath("./fixer_app/"))

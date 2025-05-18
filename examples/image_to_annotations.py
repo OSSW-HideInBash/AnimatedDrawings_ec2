@@ -12,6 +12,9 @@ from scipy import ndimage
 from pathlib import Path
 import yaml
 import logging
+import os
+os.environ["PYOPENGL_PLATFORM"] = "osmesa"  # or "osmesa" if EGL isn’t available
+
 
 
 def image_to_annotations(img_fn: str, out_dir: str) -> None:
