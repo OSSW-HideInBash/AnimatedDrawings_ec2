@@ -52,17 +52,13 @@ if __name__ == '__main__':
     logging.basicConfig(filename=f'{log_dir}/log.txt', level=logging.DEBUG)
 
     char_anno_dir = sys.argv[1]
+
+    # Use defaults unless user provides them
+    motion_cfg_fn = resource_filename(__name__, 'config/motion/dab.yaml')
+    retarget_cfg_fn = resource_filename(__name__, 'config/retarget/fair1_ppf.yaml')
+    output_gif_name = "video.gif"
+
     if len(sys.argv) > 2:
-        motion_cfg_fn = sys.argv[2]
-    else:
-        motion_cfg_fn = resource_filename(__name__, 'config/motion/dab.yaml')# must make it to be chooseable
-    if len(sys.argv) > 3:
-        retarget_cfg_fn = sys.argv[3]
-    else:
-        retarget_cfg_fn = resource_filename(__name__, 'config/retarget/fair1_ppf.yaml')
-    if len(sys.argv) > 4:
-        output_gif_name = sys.argv[4]
-    else:
-        output_gif_name = "video.gif"
+        output_gif_name = sys.argv[2]
 
     annotations_to_animation(char_anno_dir, motion_cfg_fn, retarget_cfg_fn, output_gif_name)
