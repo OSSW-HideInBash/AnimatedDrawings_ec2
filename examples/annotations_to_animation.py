@@ -12,7 +12,7 @@ import os
 os.environ["PYOPENGL_PLATFORM"] = "osmesa"  # or "osmesa" if EGL isn’t available
 
 
-def annotations_to_animation(char_anno_dir: str, motion_cfg_fn: str, retarget_cfg_fn: str):
+def annotations_to_animation(char_anno_dir: str, motion_cfg_fn: str, retarget_cfg_fn: str, output_gif_name: str = "video.gif"):
     """
     Given a path to a directory with character annotations, a motion configuration file, and a retarget configuration file,
     creates an animation and saves it to {annotation_dir}/video.png
@@ -30,7 +30,7 @@ def annotations_to_animation(char_anno_dir: str, motion_cfg_fn: str, retarget_cf
         'scene': {'ANIMATED_CHARACTERS': [animated_drawing_dict]},  # add the character to the scene
         'controller': {
             'MODE': 'video_render',  # 'video_render' or 'interactive'
-            'OUTPUT_VIDEO_PATH': str(Path(char_anno_dir, 'video.gif').resolve())},  # set the output location
+            'OUTPUT_VIDEO_PATH': str(Path(char_anno_dir, output_gif_name).resolve())},  # set the output location
         'view': {
             'USE_MESA': True  # use mesa for rendering
         }
@@ -55,10 +55,14 @@ if __name__ == '__main__':
     if len(sys.argv) > 2:
         motion_cfg_fn = sys.argv[2]
     else:
-        motion_cfg_fn = resource_filename(__name__, 'config/motion/dab.yaml')
+        motion_cfg_fn = resource_filename(__name__, 'config/motion/dab.yaml')# must make it to be chooseable
     if len(sys.argv) > 3:
         retarget_cfg_fn = sys.argv[3]
     else:
         retarget_cfg_fn = resource_filename(__name__, 'config/retarget/fair1_ppf.yaml')
+    if len(sys.argv) > 4:
+        output_gif_name = sys.argv[4]
+    else:
+        output_gif_name = "video.gif"
 
-    annotations_to_animation(char_anno_dir, motion_cfg_fn, retarget_cfg_fn)
+    annotations_to_animation(char_anno_dir, motion_cfg_fn, retarget_cfg_fn, output_gif_name)
