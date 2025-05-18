@@ -2,12 +2,12 @@ scene:
   ADD_FLOOR: False
   ADD_AD_RETARGET_BVH: False
 view:
-  CLEAR_COLOR: [1.0, 1.0, 1.0, 1.0]
+  CLEAR_COLOR: [1.0, 1.0, 1.0, 0.0]
   BACKGROUND_IMAGE: null
   WINDOW_DIMENSIONS: [500, 500]
   DRAW_AD_RIG: False
   DRAW_AD_TXTR: True
-  DRAW_AD_COLOR: True
+  DRAW_AD_COLOR: False
   DRAW_AD_MESH_LINES: False
   USE_MESA: True
   CAMERA_POS: [0.0, 0.7, 2.0]
