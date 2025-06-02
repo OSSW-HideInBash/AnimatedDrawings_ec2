@@ -54,7 +54,8 @@ if __name__ == '__main__':
     char_anno_dir = sys.argv[1]
 
     # Use defaults unless user provides them
-    motion_cfg_fn = resource_filename(__name__, 'config/motion/dab.yaml')
+    motion_cfg_fn = resource_filename(__name__, 'config/motion/dab.yaml') #must chage so it can be used with various motions
+    
     retarget_cfg_fn = resource_filename(__name__, 'config/retarget/fair1_ppf.yaml')
     output_gif_name = "video.gif"
 
