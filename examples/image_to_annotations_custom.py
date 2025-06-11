@@ -13,7 +13,9 @@ from pathlib import Path
 import yaml
 import logging
 import os
-os.environ["PYOPENGL_PLATFORM"] = "osmesa"  # or "osmesa" if EGL isn’t available
+# or "osmesa" if EGL isn’t available
+os.environ["PYOPENGL_PLATFORM"] = "osmesa"
+
 
 def fill_skeleton(skeleton_json_loc):
     """
@@ -31,7 +33,9 @@ def fill_skeleton(skeleton_json_loc):
         })
     return skeleton
 
-def image_to_annotations(img_fn: str, out_dir: str, skeleton_json_loc: str) -> None:
+
+def image_to_annotations(img_fn: str, out_dir: str,
+                         skeleton_json_loc: str) -> None:
     """
     Given the RGB image located at img_fn, runs detection, segmentation, and pose estimation for drawn character within it.
     Crops the image and saves texture, mask, and character config files necessary for animation. Writes to out_dir.
@@ -50,7 +54,7 @@ def image_to_annotations(img_fn: str, out_dir: str, skeleton_json_loc: str) -> N
     img = cv2.imread(img_fn)
 
     # copy the original image into the output_dir
-    cv2.imwrite(str(outdir/'image.png'), img)
+    cv2.imwrite(str(outdir / 'image.png'), img)
 
     # ensure it's rgb
     if len(img.shape) != 3:
@@ -61,19 +65,31 @@ def image_to_annotations(img_fn: str, out_dir: str, skeleton_json_loc: str) -> N
     # resize if needed
     if np.max(img.shape) > 1000:
         scale = 1000 / np.max(img.shape)
-        img = cv2.resize(img, (round(scale * img.shape[1]), round(scale * img.shape[0])))
+        img = cv2.resize(
+            img,
+            (round(
+                scale *
+                img.shape[1]),
+                round(
+                scale *
+                img.shape[0])))
 
     # convert to bytes and send to torchserve
     img_b = cv2.imencode('.png', img)[1].tobytes()
     request_data = {'data': img_b}
-    resp = requests.post("http://localhost:8080/predictions/drawn_humanoid_detector", files=request_data, verify=False)
+    resp = requests.post(
+        "http://localhost:8080/predictions/drawn_humanoid_detector",
+        files=request_data,
+        verify=False)
     if resp is None or resp.status_code >= 300:
-        raise Exception(f"Failed to get bounding box, please check if the 'docker_torchserve' is running and healthy, resp: {resp}")
+        raise Exception(
+            f"Failed to get bounding box, please check if the 'docker_torchserve' is running and healthy, resp: {resp}")
 
     detection_results = json.loads(resp.content)
 
     # error check detection_results
-    if isinstance(detection_results, dict) and 'code' in detection_results.keys() and detection_results['code'] == 404:
+    if isinstance(detection_results, dict) and 'code' in detection_results.keys(
+    ) and detection_results['code'] == 404:
         assert False, f'Error performing detection. Check that drawn_humanoid_detector.mar was properly downloaded. Response: {detection_results}'
 
     # order results by score, descending
@@ -94,7 +110,7 @@ def image_to_annotations(img_fn: str, out_dir: str, skeleton_json_loc: str) -> N
     l, t, r, b = [round(x) for x in bbox]
 
     # dump the bounding box results to file
-    with open(str(outdir/'bounding_box.yaml'), 'w') as f:
+    with open(str(outdir / 'bounding_box.yaml'), 'w') as f:
         yaml.dump({
             'left': l,
             'top': t,
@@ -110,14 +126,19 @@ def image_to_annotations(img_fn: str, out_dir: str, skeleton_json_loc: str) -> N
 
     # send cropped image to pose estimator
     data_file = {'data': cv2.imencode('.png', cropped)[1].tobytes()}
-    resp = requests.post("http://localhost:8080/predictions/drawn_humanoid_pose_estimator", files=data_file, verify=False)
+    resp = requests.post(
+        "http://localhost:8080/predictions/drawn_humanoid_pose_estimator",
+        files=data_file,
+        verify=False)
     if resp is None or resp.status_code >= 300:
-        raise Exception(f"Failed to get skeletons, please check if the 'docker_torchserve' is running and healthy, resp: {resp}")
+        raise Exception(
+            f"Failed to get skeletons, please check if the 'docker_torchserve' is running and healthy, resp: {resp}")
 
     pose_results = json.loads(resp.content)
 
     # error check pose_results
-    if isinstance(pose_results, dict) and 'code' in pose_results.keys() and pose_results['code'] == 404:
+    if isinstance(pose_results, dict) and 'code' in pose_results.keys(
+    ) and pose_results['code'] == 404:
         assert False, f'Error performing pose estimation. Check that drawn_humanoid_pose_estimator.mar was properly downloaded. Response: {pose_results}'
 
     # if no skeleton detected, abort
@@ -139,17 +160,20 @@ def image_to_annotations(img_fn: str, out_dir: str, skeleton_json_loc: str) -> N
     # skeleton is a list of dicts with keys: loc, name, parent
 
     # create the character config dictionary
-    char_cfg = {'skeleton': skeleton, 'height': cropped.shape[0], 'width': cropped.shape[1]}
+    char_cfg = {
+        'skeleton': skeleton,
+        'height': cropped.shape[0],
+        'width': cropped.shape[1]}
 
     # convert texture to RGBA and save
     cropped = cv2.cvtColor(cropped, cv2.COLOR_BGR2BGRA)
-    cv2.imwrite(str(outdir/'texture.png'), cropped)
+    cv2.imwrite(str(outdir / 'texture.png'), cropped)
 
     # save mask
-    cv2.imwrite(str(outdir/'mask.png'), mask)
+    cv2.imwrite(str(outdir / 'mask.png'), mask)
 
     # dump character config to yaml
-    with open(str(outdir/'char_cfg.yaml'), 'w') as f:
+    with open(str(outdir / 'char_cfg.yaml'), 'w') as f:
         yaml.dump(char_cfg, f)
 
     # create joint viz overlay for inspection purposes
@@ -158,13 +182,21 @@ def image_to_annotations(img_fn: str, out_dir: str, skeleton_json_loc: str) -> N
         x, y = joint['loc']
         name = joint['name']
         cv2.circle(joint_overlay, (int(x), int(y)), 5, (0, 0, 0), 5)
-        cv2.putText(joint_overlay, name, (int(x), int(y+15)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1, 2)
-    cv2.imwrite(str(outdir/'joint_overlay.png'), joint_overlay)
+        cv2.putText(joint_overlay, name, (int(x), int(y + 15)),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1, 2)
+    cv2.imwrite(str(outdir / 'joint_overlay.png'), joint_overlay)
+
 
 def segment(img: np.ndarray):
     """ threshold """
     img = np.min(img, axis=2)
-    img = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 115, 8)
+    img = cv2.adaptiveThreshold(
+        img,
+        255,
+        cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+        cv2.THRESH_BINARY,
+        115,
+        8)
     img = cv2.bitwise_not(img)
 
     """ morphops """
@@ -173,7 +205,7 @@ def segment(img: np.ndarray):
     img = cv2.morphologyEx(img, cv2.MORPH_DILATE, kernel, iterations=2)
 
     """ floodfill """
-    mask = np.zeros([img.shape[0]+2, img.shape[1]+2], np.uint8)
+    mask = np.zeros([img.shape[0] + 2, img.shape[1] + 2], np.uint8)
     mask[1:-1, 1:-1] = img.copy()
 
     # im_floodfill is results of floodfill. Starts off all white
@@ -181,12 +213,12 @@ def segment(img: np.ndarray):
 
     # choose 10 points along each image side. use as seed for floodfill.
     h, w = img.shape[:2]
-    for x in range(0, w-1, 10):
+    for x in range(0, w - 1, 10):
         cv2.floodFill(im_floodfill, mask, (x, 0), 0)
-        cv2.floodFill(im_floodfill, mask, (x, h-1), 0)
-    for y in range(0, h-1, 10):
+        cv2.floodFill(im_floodfill, mask, (x, h - 1), 0)
+    for y in range(0, h - 1, 10):
         cv2.floodFill(im_floodfill, mask, (0, y), 0)
-        cv2.floodFill(im_floodfill, mask, (w-1, y), 0)
+        cv2.floodFill(im_floodfill, mask, (w - 1, y), 0)
 
     # make sure edges aren't character. necessary for contour finding
     im_floodfill[0, :] = 0
@@ -218,9 +250,9 @@ def segment(img: np.ndarray):
 
     return mask.T
 
+
 if __name__ == '__main__':
 
-    
     log_dir = Path('./logs')
     log_dir.mkdir(exist_ok=True, parents=True)
     logging.basicConfig(filename=f'{log_dir}/log.txt', level=logging.DEBUG)
