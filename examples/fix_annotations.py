@@ -10,9 +10,8 @@ import os
 import sys
 import yaml
 
-os.environ["PYOPENGL_PLATFORM"] = "osmesa"  # or "osmesa" if EGL isn’t available
-
-
+os.environ["PYOPENGL_PLATFORM"] = "osmesa"  # or "osmesa" if EGL isn’t
+# available
 global cfg_path
 global char_folder
 app = Flask(__name__, template_folder=os.path.abspath("./fixer_app/"))
@@ -55,12 +54,16 @@ def process(request):
     try:
         formdata = request.form.get('data')
     except Exception as e:
-        return None, f"Error parsing data from request. No JSON data was found: {e}"
+        return None, (
+            f"Error parsing data from request. No JSON data was found: {e}"
+        )
 
     try:
         jsondata = json.loads(formdata)
     except Exception as e:
-        return None, f"Error parsing submission data into JSON. Invalid format?: {e}"
+        return None, (
+            f"Error parsing submission data into JSON. Invalid format?: {e}"
+        )
 
     # convert joint locations from floats to ints
     for joint in jsondata['skeleton']:
@@ -70,7 +73,10 @@ def process(request):
     try:
         new_cfg = yaml.dump(jsondata)
     except Exception as e:
-        return None, f"Error converting submission to YAML data. Invalid format?: {e}"
+        return None, (
+            f"Error converting submission to YAML data. "
+            f"Invalid format?: {e}"
+        )
 
     try:
         write_cfg(os.path.join(cfg_path), jsondata)
@@ -82,8 +88,19 @@ def process(request):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('char_folder', type=str, help="the location of the character bundle")
-    parser.add_argument('--port', type=int, default=5050, help="the port the tool launches on")
+    parser.add_argument(
+        'char_folder',
+        type=str,
+        help=(
+            "the location of the character bundle"
+        )
+    )
+    parser.add_argument(
+        '--port',
+        type=int,
+        default=5050,
+        help="the port the tool launches on"
+    )
     args = parser.parse_args()
 
     char_folder = args.char_folder

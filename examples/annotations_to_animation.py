@@ -9,11 +9,12 @@ import sys
 import yaml
 from pkg_resources import resource_filename
 import os
-os.environ["PYOPENGL_PLATFORM"] = "osmesa"  
+os.environ["PYOPENGL_PLATFORM"] = "osmesa"
 # or "osmesa" if EGL isn’t available
 
 
 def annotations_to_animation(
+
     char_anno_dir: str,
     motion_cfg_fn: str,
     retarget_cfg_fn: str,
@@ -85,7 +86,6 @@ if __name__ == '__main__':
             __name__,
             'config/retarget/fair1_ppf.yaml'
         )
-        
     output_gif_name = "video.gif"
 
     if len(sys.argv) > 2:
