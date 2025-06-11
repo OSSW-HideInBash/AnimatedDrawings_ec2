@@ -15,9 +15,23 @@ import logging
 import os
 os.environ["PYOPENGL_PLATFORM"] = "osmesa"  # or "osmesa" if EGL isn’t available
 
+def fill_skeleton(skeleton_json_loc):
+    """
+    Loads skeleton data from a JSON file and returns a list of joints.
+    Each joint is a dict with keys: loc, name, parent.
+    """
+    with open(skeleton_json_loc, 'r') as f:
+        data = json.load(f)
+    skeleton = []
+    for joint in data['skeleton']:
+        skeleton.append({
+            'loc': joint['loc'],
+            'name': joint['name'],
+            'parent': joint['parent']
+        })
+    return skeleton
 
-
-def image_to_annotations(img_fn: str, out_dir: str) -> None:
+def image_to_annotations(img_fn: str, out_dir: str, skeleton_json_loc: str) -> None:
     """
     Given the RGB image located at img_fn, runs detection, segmentation, and pose estimation for drawn character within it.
     Crops the image and saves texture, mask, and character config files necessary for animation. Writes to out_dir.
@@ -25,6 +39,7 @@ def image_to_annotations(img_fn: str, out_dir: str) -> None:
     Params:
         img_fn: path to RGB image
         out_dir: directory where outputs will be saved
+        skeleton_json_loc: path to the skeleton json file
     """
 
     # create output directory
@@ -86,7 +101,7 @@ def image_to_annotations(img_fn: str, out_dir: str) -> None:
             'right': r,
             'bottom': b
         }, f)
-    #boundaries-> automatially detected bounding box
+
     # crop the image
     cropped = img[t:b, l:r]
 
@@ -118,26 +133,10 @@ def image_to_annotations(img_fn: str, out_dir: str) -> None:
         assert False, msg
 
     # get x y coordinates of detection joint keypoints
-    kpts = np.array(pose_results[0]['keypoints'])[:, :2] #[x:y -> index 0,1 ]
+    kpts = np.array(pose_results[0]['keypoints'])[:, :2]
 
-    # use them to build character skeleton rig
-    skeleton = []
-    skeleton.append({'loc' : [round(x) for x in (kpts[11]+kpts[12])/2], 'name': 'root'          , 'parent': None})
-    skeleton.append({'loc' : [round(x) for x in (kpts[11]+kpts[12])/2], 'name': 'hip'           , 'parent': 'root'})
-    skeleton.append({'loc' : [round(x) for x in (kpts[5]+kpts[6])/2  ], 'name': 'torso'         , 'parent': 'hip'})
-    skeleton.append({'loc' : [round(x) for x in  kpts[0]             ], 'name': 'neck'          , 'parent': 'torso'})
-    skeleton.append({'loc' : [round(x) for x in  kpts[6]             ], 'name': 'right_shoulder', 'parent': 'torso'})
-    skeleton.append({'loc' : [round(x) for x in  kpts[8]             ], 'name': 'right_elbow'   , 'parent': 'right_shoulder'})
-    skeleton.append({'loc' : [round(x) for x in  kpts[10]            ], 'name': 'right_hand'    , 'parent': 'right_elbow'})
-    skeleton.append({'loc' : [round(x) for x in  kpts[5]             ], 'name': 'left_shoulder' , 'parent': 'torso'})
-    skeleton.append({'loc' : [round(x) for x in  kpts[7]             ], 'name': 'left_elbow'    , 'parent': 'left_shoulder'})
-    skeleton.append({'loc' : [round(x) for x in  kpts[9]             ], 'name': 'left_hand'     , 'parent': 'left_elbow'})
-    skeleton.append({'loc' : [round(x) for x in  kpts[12]            ], 'name': 'right_hip'     , 'parent': 'root'})
-    skeleton.append({'loc' : [round(x) for x in  kpts[14]            ], 'name': 'right_knee'    , 'parent': 'right_hip'})
-    skeleton.append({'loc' : [round(x) for x in  kpts[16]            ], 'name': 'right_foot'    , 'parent': 'right_knee'})
-    skeleton.append({'loc' : [round(x) for x in  kpts[11]            ], 'name': 'left_hip'      , 'parent': 'root'})
-    skeleton.append({'loc' : [round(x) for x in  kpts[13]            ], 'name': 'left_knee'     , 'parent': 'left_hip'})
-    skeleton.append({'loc' : [round(x) for x in  kpts[15]            ], 'name': 'left_foot'     , 'parent': 'left_knee'})
+    skeleton = fill_skeleton(skeleton_json_loc)
+    # skeleton is a list of dicts with keys: loc, name, parent
 
     # create the character config dictionary
     char_cfg = {'skeleton': skeleton, 'height': cropped.shape[0], 'width': cropped.shape[1]}
@@ -161,7 +160,6 @@ def image_to_annotations(img_fn: str, out_dir: str) -> None:
         cv2.circle(joint_overlay, (int(x), int(y)), 5, (0, 0, 0), 5)
         cv2.putText(joint_overlay, name, (int(x), int(y+15)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1, 2)
     cv2.imwrite(str(outdir/'joint_overlay.png'), joint_overlay)
-
 
 def segment(img: np.ndarray):
     """ threshold """
@@ -220,7 +218,6 @@ def segment(img: np.ndarray):
 
     return mask.T
 
-
 if __name__ == '__main__':
     log_dir = Path('./logs')
     log_dir.mkdir(exist_ok=True, parents=True)
@@ -228,4 +225,6 @@ if __name__ == '__main__':
 
     img_fn = sys.argv[1]
     out_dir = sys.argv[2]
-    image_to_annotations(img_fn, out_dir)
+    # Accept skeleton_json_loc as the last argument
+    skeleton_json_loc = sys.argv[3]
+    image_to_annotations(img_fn, out_dir, skeleton_json_loc)

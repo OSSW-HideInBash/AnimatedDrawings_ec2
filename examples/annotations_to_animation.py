@@ -56,7 +56,14 @@ if __name__ == '__main__':
     # Use defaults unless user provides them
     motion_cfg_fn = resource_filename(__name__, 'config/motion/dab.yaml') #must chage so it can be used with various motions
     
-    retarget_cfg_fn = resource_filename(__name__, 'config/retarget/fair1_ppf.yaml')
+    dance_motion_retarget = sys.argv[4] 
+    if dance_motion_retarget == 1:
+        retarget_cfg_fn = resource_filename(__name__, 'config/retarget/mixamo_fff.yaml')
+    elif dance_motion_retarget == 3:
+        retarget_cfg_fn = resource_filename(__name__, 'config/retarget/cmu1_pfp.yaml')
+    else:
+        retarget_cfg_fn = resource_filename(__name__, 'config/retarget/fair1_ppf.yaml')
+    
     output_gif_name = "video.gif"
 
     if len(sys.argv) > 2:
