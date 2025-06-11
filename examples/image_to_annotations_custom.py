@@ -219,6 +219,8 @@ def segment(img: np.ndarray):
     return mask.T
 
 if __name__ == '__main__':
+
+    
     log_dir = Path('./logs')
     log_dir.mkdir(exist_ok=True, parents=True)
     logging.basicConfig(filename=f'{log_dir}/log.txt', level=logging.DEBUG)
