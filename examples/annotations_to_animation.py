@@ -9,13 +9,20 @@ import sys
 import yaml
 from pkg_resources import resource_filename
 import os
-os.environ["PYOPENGL_PLATFORM"] = "osmesa"  # or "osmesa" if EGL isn’t available
+os.environ["PYOPENGL_PLATFORM"] = "osmesa"  
+# or "osmesa" if EGL isn’t available
 
 
-def annotations_to_animation(char_anno_dir: str, motion_cfg_fn: str, retarget_cfg_fn: str, output_gif_name: str = "video.gif"):
+def annotations_to_animation(
+    char_anno_dir: str,
+    motion_cfg_fn: str,
+    retarget_cfg_fn: str,
+    output_gif_name: str = "video.gif"
+):
     """
-    Given a path to a directory with character annotations, a motion configuration file, and a retarget configuration file,
-    creates an animation and saves it to {annotation_dir}/video.png
+    Given a path to a directory with character annotations, a motion
+    configuration file, and a retarget configuration file, creates an
+    animation and saves it to {annotation_dir}/video.png
     """
 
     # package character_cfg_fn, motion_cfg_fn, and retarget_cfg_fn
@@ -27,10 +34,15 @@ def annotations_to_animation(char_anno_dir: str, motion_cfg_fn: str, retarget_cf
 
     # create mvc config
     mvc_cfg = {
-        'scene': {'ANIMATED_CHARACTERS': [animated_drawing_dict]},  # add the character to the scene
+        'scene': {
+            'ANIMATED_CHARACTERS': [animated_drawing_dict]
+        },  # add the character to the scene
         'controller': {
             'MODE': 'video_render',  # 'video_render' or 'interactive'
-            'OUTPUT_VIDEO_PATH': str(Path(char_anno_dir, output_gif_name).resolve())},  # set the output location
+            'OUTPUT_VIDEO_PATH': str(
+                Path(char_anno_dir, output_gif_name).resolve()
+            )
+        },  # set the output location
         'view': {
             'USE_MESA': True  # use mesa for rendering
         }
@@ -54,19 +66,34 @@ if __name__ == '__main__':
     char_anno_dir = sys.argv[1]
 
     # Use defaults unless user provides them
-    motion_cfg_fn = resource_filename(__name__, 'config/motion/dab.yaml') #must chage so it can be used with various motions
-    
-    dance_motion_retarget = sys.argv[4] 
+    motion_cfg_fn = resource_filename(
+        __name__, 'config/motion/dab.yaml'
+    )  # must change so it can be used with various motions
+
+    dance_motion_retarget = sys.argv[4]
     if dance_motion_retarget == 1:
-        retarget_cfg_fn = resource_filename(__name__, 'config/retarget/mixamo_fff.yaml')
+        retarget_cfg_fn = resource_filename(
+            __name__,
+            'config/retarget/mixamo_fff.yaml'
+        )
     elif dance_motion_retarget == 3:
-        retarget_cfg_fn = resource_filename(__name__, 'config/retarget/cmu1_pfp.yaml')
-    else:
-        retarget_cfg_fn = resource_filename(__name__, 'config/retarget/fair1_ppf.yaml')
-    
+        retarget_cfg_fn = resource_filename(
+            __name__,
+            'config/retarget/cmu1_pfp.yaml'
+        )
+        retarget_cfg_fn = resource_filename(
+            __name__,
+            'config/retarget/fair1_ppf.yaml'
+        )
+        
     output_gif_name = "video.gif"
 
     if len(sys.argv) > 2:
         output_gif_name = sys.argv[2]
 
-    annotations_to_animation(char_anno_dir, motion_cfg_fn, retarget_cfg_fn, output_gif_name)
+    annotations_to_animation(
+        char_anno_dir,
+        motion_cfg_fn,
+        retarget_cfg_fn,
+        output_gif_name
+    )
