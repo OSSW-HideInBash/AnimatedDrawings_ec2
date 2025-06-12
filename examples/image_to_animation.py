@@ -52,9 +52,9 @@ if __name__ == "__main__":
    
 
     # 모션 선택 (옵션)
-    if len(sys.argv) > 4:
+    if len(sys.argv) > 3:
         try:
-            motion_idx = int(sys.argv[4])
+            motion_idx = int(sys.argv[3])
             motion_cfg_fn = resource_filename(__name__, motion_list[motion_idx])
         except (ValueError, IndexError):
             motion_cfg_fn = resource_filename(
@@ -68,16 +68,11 @@ if __name__ == "__main__":
     dance_motion_retarget = sys.argv[3] 
     if dance_motion_retarget == "1":
         retarget_cfg_fn = resource_filename(
-            __name__,
-            "config/retarget/mixamo_fff.yaml"
+            __name__, "config/retarget/mixamo_fff.yaml"
         )
+    elif dance_motion_retarget == "3":
         retarget_cfg_fn = resource_filename(
-            __name__,
-            "config/retarget/fair1_ppf.yaml"
-        )
-        retarget_cfg_fn = resource_filename(
-            __name__,
-            "config/retarget/cmu1_pfp.yaml"
+            __name__, "config/retarget/cmu1_pfp.yaml"
         )
     else:
         retarget_cfg_fn = resource_filename(

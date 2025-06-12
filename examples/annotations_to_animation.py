@@ -71,11 +71,11 @@ if __name__ == "__main__":
     )  # must change so it can be used with various motions
 
     dance_motion_retarget = sys.argv[3]
-    if dance_motion_retarget == 1:
+    if dance_motion_retarget == "1":
         retarget_cfg_fn = resource_filename(
             __name__, "config/retarget/mixamo_fff.yaml"
         )
-    elif dance_motion_retarget == 3:
+    elif dance_motion_retarget == "3":
         retarget_cfg_fn = resource_filename(
             __name__, "config/retarget/cmu1_pfp.yaml"
         )

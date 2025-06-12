@@ -26,14 +26,19 @@ def fill_skeleton(skeleton_json_loc, height, width):
     """
     with open(skeleton_json_loc, "r") as f:
         data = json.load(f)
+    
     skeleton = []
     for joint in data["skeleton"]:
-        #원본 이미지 크기에 맞게 스케일링!
         loc = joint["loc"]
-        scaled_loc = [loc[0] * width, loc[1] * height]
+        
+        scaled_loc = [
+            min(loc[0], width - 1),
+            min(loc[1], height - 1)
+        ]
         skeleton.append(
             {"loc": scaled_loc, "name": joint["name"], "parent": joint["parent"]}
         )
+    
     return skeleton
 
 
