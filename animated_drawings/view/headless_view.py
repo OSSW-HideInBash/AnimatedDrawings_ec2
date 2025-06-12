@@ -11,7 +11,7 @@ import logging
 
 
 class HeadlessView(View):
-    """ Headless View for rendering without a visible window (e.g., server or CI/CD). """
+    """Headless View for rendering without a visible window (e.g., server or CI/CD)."""
 
     def __init__(self, cfg: ViewConfig) -> None:
         super().__init__(cfg)
@@ -24,7 +24,7 @@ class HeadlessView(View):
         self.scene = scene
 
     def render(self, scene: Transform) -> None:
-        """ Simulates rendering without drawing anything. Could save to file/GIF if needed. """
+        """Simulates rendering without drawing anything. Could save to file/GIF if needed."""
         logging.debug(f"HeadlessView: Simulated render for frame {self.frame_count}")
         self.frame_count += 1
         # No actual rendering, but logic could include:
@@ -33,15 +33,15 @@ class HeadlessView(View):
         # - Collecting metrics
 
     def get_framebuffer_size(self) -> Tuple[int, int]:
-        """ Return dummy framebuffer size from config. """
+        """Return dummy framebuffer size from config."""
         return (self.cfg.window_dimensions[0], self.cfg.window_dimensions[1])
 
     def swap_buffers(self) -> None:
-        """ No buffers to swap in headless mode. """
+        """No buffers to swap in headless mode."""
         pass
 
     def clear_window(self) -> None:
-        """ No OpenGL window to clear. """
+        """No OpenGL window to clear."""
         pass
 
     def cleanup(self) -> None:

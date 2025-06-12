@@ -14,7 +14,7 @@ class Floor(Transform):
 
         for idx in range(-5, 5):
             for jdx in range(-5, 5):
-                color = 'white' if (idx + jdx) % 2 else 'black'
+                color = "white" if (idx + jdx) % 2 else "black"
                 tile = Rectangle(color=color)
                 tile.offset(np.array([float(idx), 0, float(jdx)]))
                 self.add_child(tile)

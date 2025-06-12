@@ -15,14 +15,14 @@ from animated_drawings.config import ControllerConfig
 
 
 class InteractiveController(Controller):
-    """ Interactive Controller Class """
+    """Interactive Controller Class"""
 
     def __init__(self, cfg: ControllerConfig, scene: Scene, view: WindowView) -> None:
         super().__init__(cfg, scene)
 
         self.view: WindowView = view
         self.prev_time: float = 0.0  # tracks real-world time passing between run loops
-        self.pause: bool = False     # tracks whether time progresses in the scene
+        self.pause: bool = False  # tracks whether time progresses in the scene
 
         glfw.init()
         glfw.set_key_callback(self.view.win, self._on_key)

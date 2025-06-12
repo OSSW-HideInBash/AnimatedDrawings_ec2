@@ -37,9 +37,9 @@ def index():
 
     base64_img = {"data": ""}
     with open(os.path.join(char_folder, "texture.png"), "rb") as image_file:
-        base64_img['data'] = str(base64.b64encode(image_file.read()), "utf-8")
+        base64_img["data"] = str(base64.b64encode(image_file.read()), "utf-8")
 
-    return render_template('dist/index.html', cfg=cfg, image=base64_img)
+    return render_template("dist/index.html", cfg=cfg, image=base64_img)
 
 
 @app.route("/annotations/submit", methods=["POST"])
@@ -47,35 +47,30 @@ def post_cfg():
     output, message = process(request)
     if output:
         print(output)
-    return render_template('submit.html', code=output, message=message)
+    return render_template("submit.html", code=output, message=message)
 
 
 def process(request):
     try:
-        formdata = request.form.get('data')
+        formdata = request.form.get("data")
     except Exception as e:
-        return None, (
-            f"Error parsing data from request. No JSON data was found: {e}"
-        )
+        return None, (f"Error parsing data from request. No JSON data was found: {e}")
 
     try:
         jsondata = json.loads(formdata)
     except Exception as e:
-        return None, (
-            f"Error parsing submission data into JSON. Invalid format?: {e}"
-        )
+        return None, (f"Error parsing submission data into JSON. Invalid format?: {e}")
 
     # convert joint locations from floats to ints
-    for joint in jsondata['skeleton']:
-        joint['loc'][0] = round(joint['loc'][0])
-        joint['loc'][1] = round(joint['loc'][1])
+    for joint in jsondata["skeleton"]:
+        joint["loc"][0] = round(joint["loc"][0])
+        joint["loc"][1] = round(joint["loc"][1])
 
     try:
         new_cfg = yaml.dump(jsondata)
     except Exception as e:
         return None, (
-            f"Error converting submission to YAML data. "
-            f"Invalid format?: {e}"
+            f"Error converting submission to YAML data. " f"Invalid format?: {e}"
         )
 
     try:
@@ -89,17 +84,10 @@ def process(request):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        'char_folder',
-        type=str,
-        help=(
-            "the location of the character bundle"
-        )
+        "char_folder", type=str, help=("the location of the character bundle")
     )
     parser.add_argument(
-        '--port',
-        type=int,
-        default=5050,
-        help="the port the tool launches on"
+        "--port", type=int, default=5050, help="the port the tool launches on"
     )
     args = parser.parse_args()
 

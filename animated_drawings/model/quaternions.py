@@ -20,13 +20,16 @@ class Quaternions:
     Strongly influenced by Daniel Holden's excellent Quaternions class.
     """
 
-    def __init__(self, qs: Union[Iterable[Union[int, float]], npt.NDArray[np.float32], Quaternions]) -> None:
+    def __init__(
+        self,
+        qs: Union[Iterable[Union[int, float]], npt.NDArray[np.float32], Quaternions],
+    ) -> None:
 
         self.qs: npt.NDArray[np.float32]
 
         if isinstance(qs, np.ndarray):
             if not qs.shape[-1] == 4:
-                msg = f'Final dimension passed to Quaternions must be 4. Found {qs.shape[-1]}'
+                msg = f"Final dimension passed to Quaternions must be 4. Found {qs.shape[-1]}"
                 logging.critical(msg)
                 assert False, msg
 
@@ -39,7 +42,7 @@ class Quaternions:
                 qs = np.array(qs)
                 assert qs.shape[-1] == 4
             except Exception:
-                msg = 'Could not convert quaternion data to ndarray with shape[-1] == 4'
+                msg = "Could not convert quaternion data to ndarray with shape[-1] == 4"
                 logging.critical(msg)
                 assert False, msg
 
@@ -51,14 +54,16 @@ class Quaternions:
             self.qs = qs.qs
 
         else:
-            msg = 'Quaternions must be constructed from Quaternions or numpy array'
+            msg = "Quaternions must be constructed from Quaternions or numpy array"
             logging.critical(msg)
             assert False, msg
 
         self.normalize()
 
     def normalize(self) -> None:
-        self.qs = self.qs / np.expand_dims(np.sum(self.qs ** 2.0, axis=-1) ** 0.5, axis=-1)
+        self.qs = self.qs / np.expand_dims(
+            np.sum(self.qs**2.0, axis=-1) ** 0.5, axis=-1
+        )
 
     def to_rotation_matrix(self) -> npt.NDArray[np.float32]:
         """
@@ -73,9 +78,9 @@ class Quaternions:
 
         xx, yy, zz = x**2, y**2, z**2
 
-        wx, wy, wz = w*x, w*y, w*z
-        xy, xz     = x*y, x*z  # no
-        yz         = y*z
+        wx, wy, wz = w * x, w * y, w * z
+        xy, xz = x * y, x * z  # no
+        yz = y * z
 
         # Row 1
         r00 = 1 - 2 * (yy + zz)
@@ -92,24 +97,33 @@ class Quaternions:
         r21 = 2 * (yz + wx)
         r22 = 1 - 2 * (xx + yy)
 
-        return np.array([[r00, r01, r02, 0.0],
-                         [r10, r11, r12, 0.0],
-                         [r20, r21, r22, 0.0],
-                         [0.0, 0.0, 0.0, 1.0]], dtype=np.float32)
+        return np.array(
+            [
+                [r00, r01, r02, 0.0],
+                [r10, r11, r12, 0.0],
+                [r20, r21, r22, 0.0],
+                [0.0, 0.0, 0.0, 1.0],
+            ],
+            dtype=np.float32,
+        )
 
     @classmethod
     def rotate_between_vectors(cls, v1: Vectors, v2: Vectors) -> Quaternions:
-        """ Computes quaternion rotating from v1 to v2.  """
+        """Computes quaternion rotating from v1 to v2."""
 
         xyz: List[float] = v1.cross(v2).vs.squeeze().tolist()
-        w: float = math.sqrt((v1.length**2) * (v2.length**2)) + np.dot(v1.vs.squeeze(), v2.vs.squeeze())
+        w: float = math.sqrt((v1.length**2) * (v2.length**2)) + np.dot(
+            v1.vs.squeeze(), v2.vs.squeeze()
+        )
 
         ret_q = Quaternions([w, *xyz])
         ret_q.normalize()
         return ret_q
 
     @classmethod
-    def from_angle_axis(cls, angles: npt.NDArray[np.float32], axes: Vectors) -> Quaternions:
+    def from_angle_axis(
+        cls, angles: npt.NDArray[np.float32], axes: Vectors
+    ) -> Quaternions:
         axes.norm()
 
         if len(angles.shape) == 1:
@@ -125,7 +139,9 @@ class Quaternions:
         return Quaternions(qs)
 
     @classmethod
-    def from_euler_angles(cls, order: str, angles: npt.NDArray[np.float32]) -> Quaternions:
+    def from_euler_angles(
+        cls, order: str, angles: npt.NDArray[np.float32]
+    ) -> Quaternions:
         """
         Applies a series of euler angle rotations. Angles applied from right to left
         :param order: string comprised of x, y, and/or z
@@ -135,7 +151,7 @@ class Quaternions:
             angles = np.expand_dims(angles, axis=0)
 
         if len(order) != angles.shape[-1]:
-            msg = 'length of orders and angles does not match'
+            msg = "length of orders and angles does not match"
             logging.critical(msg)
             assert False, msg
 
@@ -146,13 +162,13 @@ class Quaternions:
             angle = np.expand_dims(angle, axis=1)
 
             axis_char = axis_char.lower()
-            if axis_char not in 'xyz':
-                msg = f'order contained unsupported char:{axis_char}'
+            if axis_char not in "xyz":
+                msg = f"order contained unsupported char:{axis_char}"
                 logging.critical(msg)
                 assert False, msg
 
             axis = np.zeros([*angles.shape[:-1], 3])
-            axis[..., ord(axis_char) - ord('x')] = 1.0
+            axis[..., ord(axis_char) - ord("x")] = 1.0
 
             _quats.insert(0, Quaternions.from_angle_axis(angle, Vectors(axis)))
 
@@ -184,19 +200,19 @@ class Quaternions:
         if m22 < 0:
             if m00 > m11:
                 t = 1 + m00 - m11 - m22
-                q = np.array([m12-m21,      t, m01+m10, m20+m02])
+                q = np.array([m12 - m21, t, m01 + m10, m20 + m02])
             else:
                 t = 1 - m00 + m11 - m22
-                q = np.array([m20-m02, m01+m10,       t, m12+m21])
+                q = np.array([m20 - m02, m01 + m10, t, m12 + m21])
         else:
             if m00 < -m11:
                 t = 1 - m00 - m11 + m22
-                q = np.array([m01-m10, m20+m02, m12+m21,       t])
+                q = np.array([m01 - m10, m20 + m02, m12 + m21, t])
             else:
                 t = 1 + m00 + m11 + m22
-                q = np.array([      t, m12-m21, m20-m02, m01-m10])
+                q = np.array([t, m12 - m21, m20 - m02, m01 - m10])
 
-        q *= (0.5 / math.sqrt(t))
+        q *= 0.5 / math.sqrt(t)
 
         ret_q = Quaternions(q)
         ret_q.normalize()
@@ -218,10 +234,10 @@ class Quaternions:
 
         t = np.empty(self.qs.shape)
 
-        t[..., 0] = r0*s0 - r1*s1 - r2*s2 - r3*s3
-        t[..., 1] = r0*s1 + r1*s0 - r2*s3 + r3*s2
-        t[..., 2] = r0*s2 + r1*s3 + r2*s0 - r3*s1
-        t[..., 3] = r0*s3 - r1*s2 + r2*s1 + r3*s0
+        t[..., 0] = r0 * s0 - r1 * s1 - r2 * s2 - r3 * s3
+        t[..., 1] = r0 * s1 + r1 * s0 - r2 * s3 + r3 * s2
+        t[..., 2] = r0 * s2 + r1 * s3 + r2 * s0 - r3 * s1
+        t[..., 3] = r0 * s3 - r1 * s2 + r2 * s1 + r3 * s0
 
         return Quaternions(t)
 

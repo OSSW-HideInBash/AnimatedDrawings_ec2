@@ -9,7 +9,13 @@ import numpy as np
 
 def test_init():
     t = Transform()
-    for m in [t._rotate_m, t._translate_m, t._scale_m, t._local_transform, t._world_transform]:
+    for m in [
+        t._rotate_m,
+        t._translate_m,
+        t._scale_m,
+        t._local_transform,
+        t._world_transform,
+    ]:
         assert np.array_equal(m, np.identity(4))
 
 
@@ -18,8 +24,7 @@ def test_set_position():
     t.set_position(np.array([1.0, 1.0, 1.0]))
     t.set_position(np.array([2.0, 2.0, 2.0]))
     t.update_transforms()
-    assert np.array_equal(
-        t._local_transform[:-1, -1], np.array([2.0, 2.0, 2.0]))
+    assert np.array_equal(t._local_transform[:-1, -1], np.array([2.0, 2.0, 2.0]))
 
 
 def test_offset():
@@ -27,8 +32,7 @@ def test_offset():
     t.offset(np.array([1.0, 1.0, 1.0]))
     t.offset(np.array([2.0, 2.0, 2.0]))
     t.update_transforms()
-    assert np.array_equal(
-        t._local_transform[:-1, -1], np.array([3.0, 3.0, 3.0]))
+    assert np.array_equal(t._local_transform[:-1, -1], np.array([3.0, 3.0, 3.0]))
 
 
 def test_update_transforms():
@@ -38,13 +42,12 @@ def test_update_transforms():
 
     t1.set_position(np.array([3.0, 0.0, 0.0]))
     t1.update_transforms()
-    assert np.array_equal(
-        t2._world_transform[:-1, -1], np.array([3.0, 0.0, 0.0]))
+    assert np.array_equal(t2._world_transform[:-1, -1], np.array([3.0, 0.0, 0.0]))
 
 
 def test_rotate():
     t = Transform()
-    q = Quaternions.from_euler_angles('y', np.array([-90]))
+    q = Quaternions.from_euler_angles("y", np.array([-90]))
     t.set_rotation(q)
     t.update_transforms()
 

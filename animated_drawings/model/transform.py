@@ -11,16 +11,17 @@ import logging
 from typing import Union, Optional, List, Tuple
 
 
-class Transform():
+class Transform:
     """Base class from which all other scene objects descend"""
 
-    def __init__(self,
-                 parent: Optional[Transform] = None,
-                 name: Optional[str] = None,
-                 children: List[Transform] = [],
-                 offset: Union[npt.NDArray[np.float32], Vectors, None] = None,
-                 **kwargs
-                 ) -> None:
+    def __init__(
+        self,
+        parent: Optional[Transform] = None,
+        name: Optional[str] = None,
+        children: List[Transform] = [],
+        offset: Union[npt.NDArray[np.float32], Vectors, None] = None,
+        **kwargs,
+    ) -> None:
 
         super().__init__(**kwargs)
 
@@ -39,11 +40,20 @@ class Transform():
         if offset is not None:
             self.offset(offset)
 
-        self._local_transform: npt.NDArray[np.float32] = np.identity(4, dtype=np.float32)
-        self._world_transform: npt.NDArray[np.float32] = np.identity(4, dtype=np.float32)
+        self._local_transform: npt.NDArray[np.float32] = np.identity(
+            4, dtype=np.float32
+        )
+        self._world_transform: npt.NDArray[np.float32] = np.identity(
+            4, dtype=np.float32
+        )
         self.dirty_bit: bool = True  # are world/local transforms stale?
 
-    def update_transforms(self, parent_dirty_bit: bool = False, recurse_on_children: bool = True, update_ancestors: bool = False) -> None:
+    def update_transforms(
+        self,
+        parent_dirty_bit: bool = False,
+        recurse_on_children: bool = True,
+        update_ancestors: bool = False,
+    ) -> None:
         """
         Updates transforms if stale.
         If own dirty bit is set, recompute local matrix
@@ -55,7 +65,10 @@ class Transform():
         if update_ancestors:
             ancestor, ancestor_parent = self, self.get_parent()
             while ancestor_parent is not None:
-                ancestor, ancestor_parent = ancestor_parent, ancestor_parent.get_parent()
+                ancestor, ancestor_parent = (
+                    ancestor_parent,
+                    ancestor_parent.get_parent(),
+                )
             ancestor.update_transforms()
 
         if self.dirty_bit:
@@ -75,9 +88,13 @@ class Transform():
     def compute_world_transform(self) -> None:
         self._world_transform = self._local_transform
         if self._parent:
-            self._world_transform = self._parent._world_transform @ self._world_transform
+            self._world_transform = (
+                self._parent._world_transform @ self._world_transform
+            )
 
-    def get_world_transform(self, update_ancestors: bool = True) -> npt.NDArray[np.float32]:
+    def get_world_transform(
+        self, update_ancestors: bool = True
+    ) -> npt.NDArray[np.float32]:
         """
         Get the transform's world matrix.
         If update is true, check to ensure the world_transform is current
@@ -91,7 +108,7 @@ class Transform():
         self.dirty_bit = True
 
     def set_position(self, pos: Union[npt.NDArray[np.float32], Vectors]) -> None:
-        """ Set the absolute values of the translational elements of transform """
+        """Set the absolute values of the translational elements of transform"""
         if isinstance(pos, Vectors):
             pos = pos.vs
 
@@ -100,7 +117,7 @@ class Transform():
         elif pos.shape == (3,):
             pass
         else:
-            msg = f'bad vector dim passed to set_position. Found: {pos.shape}'
+            msg = f"bad vector dim passed to set_position. Found: {pos.shape}"
             logging.critical(msg)
             assert False, msg
 
@@ -108,12 +125,14 @@ class Transform():
         self.dirty_bit = True
 
     def get_local_position(self) -> npt.NDArray[np.float32]:
-        """ Ensure local transform is up-to-date and return local xyz coordinates """
+        """Ensure local transform is up-to-date and return local xyz coordinates"""
         if self.dirty_bit:
             self.compute_local_transform()
         return np.copy(self._local_transform[:-1, -1])
 
-    def get_world_position(self, update_ancestors: bool = True) -> npt.NDArray[np.float32]:
+    def get_world_position(
+        self, update_ancestors: bool = True
+    ) -> npt.NDArray[np.float32]:
         """
         Ensure all parent transforms are update and return world xyz coordinates
         If update_ancestor_transforms is true, update ancestor transforms to ensure
@@ -125,7 +144,7 @@ class Transform():
         return np.copy(self._world_transform[:-1, -1])
 
     def offset(self, pos: Union[npt.NDArray[np.float32], Vectors]) -> None:
-        """ Translational offset by the specified amount """
+        """Translational offset by the specified amount"""
 
         if isinstance(pos, Vectors):
             pos = pos.vs[0]
@@ -142,7 +161,7 @@ class Transform():
         fwd: Vectors = fwd_.copy()  # norming will change the vector
 
         if fwd.vs.shape != (1, 3):
-            msg = f'look_at fwd_ vector must have shape [1,3]. Found: {fwd.vs.shape}'
+            msg = f"look_at fwd_ vector must have shape [1,3]. Found: {fwd.vs.shape}"
             logging.critical(msg)
             assert False, msg
 
@@ -167,7 +186,11 @@ class Transform():
         self._rotate_m = rotate_m
         self.dirty_bit = True
 
-    def get_right_up_fwd_vectors(self) -> Tuple[npt.NDArray[np.float32], npt.NDArray[np.float32], npt.NDArray[np.float32]]:
+    def get_right_up_fwd_vectors(
+        self,
+    ) -> Tuple[
+        npt.NDArray[np.float32], npt.NDArray[np.float32], npt.NDArray[np.float32]
+    ]:
         inverted: npt.NDArray[np.float32] = np.linalg.inv(self.get_world_transform())
         right: npt.NDArray[np.float32] = inverted[:-1, 0]
         up: npt.NDArray[np.float32] = inverted[:-1, 1]
@@ -177,7 +200,7 @@ class Transform():
 
     def set_rotation(self, q: Quaternions) -> None:
         if q.qs.shape != (1, 4):
-            msg = f'set_rotate q must have dimension (1, 4). Found: {q.qs.shape}'
+            msg = f"set_rotate q must have dimension (1, 4). Found: {q.qs.shape}"
             logging.critical(msg)
             assert False, msg
         self._rotate_m = q.to_rotation_matrix()
@@ -185,10 +208,12 @@ class Transform():
 
     def rotation_offset(self, q: Quaternions) -> None:
         if q.qs.shape != (1, 4):
-            msg = f'set_rotate q must have dimension (1, 4). Found: {q.qs.shape}'
+            msg = f"set_rotate q must have dimension (1, 4). Found: {q.qs.shape}"
             logging.critical(msg)
             assert False, msg
-        self._rotate_m = (q * Quaternions.from_rotation_matrix(self._rotate_m)).to_rotation_matrix()
+        self._rotate_m = (
+            q * Quaternions.from_rotation_matrix(self._rotate_m)
+        ).to_rotation_matrix()
         self.dirty_bit = True
 
     def add_child(self, child: Transform) -> None:
@@ -206,7 +231,7 @@ class Transform():
         return self._parent
 
     def get_transform_by_name(self, name: str) -> Optional[Transform]:
-        """ Search self and children for transform with matching name. Return it if found, None otherwise. """
+        """Search self and children for transform with matching name. Return it if found, None otherwise."""
 
         # are we match?
         if self.name == name:
@@ -222,7 +247,7 @@ class Transform():
         return None
 
     def draw(self, recurse: bool = True, **kwargs) -> None:
-        """ Draw this transform and recurse on children """
+        """Draw this transform and recurse on children"""
         self._draw(**kwargs)
 
         if recurse:

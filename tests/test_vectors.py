@@ -16,7 +16,7 @@ def test_initialize_with_tuple_or_list1():
 
 def test_initialize2():
     try:
-        Vectors('f')  # type: ignore
+        Vectors("f")  # type: ignore
     except AssertionError:
         return
     assert False
@@ -29,7 +29,7 @@ def test_initialize_with_single_dimensional_array():
 
 def test_div():
     v1 = Vectors(np.array([0, 1, 2]))
-    assert np.array_equal((v1/2).vs, np.array([[0.0, 0.5, 1.0]]))
+    assert np.array_equal((v1 / 2).vs, np.array([[0.0, 0.5, 1.0]]))
 
 
 def test_norm():

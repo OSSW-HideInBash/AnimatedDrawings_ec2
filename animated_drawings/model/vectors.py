@@ -12,13 +12,18 @@ from copy import copy
 from animated_drawings.utils import TOLERANCE
 
 
-class Vectors():
+class Vectors:
     """
     Wrapper class around ndarray interpreted as one or more vectors of equal dimensionality
     When passing in existing Vectors, new Vectors object will share the underlying nparray, so be careful.
     """
 
-    def __init__(self, vs_: Union[Iterable[Union[float, int, Vectors, npt.NDArray[np.float32]]], Vectors]) -> None:  # noqa: C901
+    def __init__(
+        self,
+        vs_: Union[
+            Iterable[Union[float, int, Vectors, npt.NDArray[np.float32]]], Vectors
+        ],
+    ) -> None:  # noqa: C901
 
         self.vs: npt.NDArray[np.float32]
 
@@ -35,7 +40,7 @@ class Vectors():
                 if len(vs_.shape) == 1:
                     vs_ = np.expand_dims(vs_, axis=0)
             except Exception as e:
-                msg = f'Error initializing Vectors: {str(e)}'
+                msg = f"Error initializing Vectors: {str(e)}"
                 logging.critical(msg)
                 assert False, msg
             self.vs = vs_
@@ -45,7 +50,7 @@ class Vectors():
             try:
                 vs_ = np.stack(vs_)  # pyright: ignore[reportGeneralTypeIssues]
             except Exception as e:
-                msg = f'Error initializing Vectors: {str(e)}'
+                msg = f"Error initializing Vectors: {str(e)}"
                 logging.critical(msg)
                 assert False, msg
             self.vs = vs_  # pyright: ignore[reportGeneralTypeIssues]
@@ -53,19 +58,21 @@ class Vectors():
         # initialize from tuple or list of Vectors
         elif isinstance(vs_, (tuple, list)) and isinstance(vs_[0], Vectors):
             try:
-                vs_ = np.stack([v.vs.squeeze() for v in vs_])  # pyright: ignore[reportGeneralTypeIssues]
+                vs_ = np.stack(
+                    [v.vs.squeeze() for v in vs_]
+                )  # pyright: ignore[reportGeneralTypeIssues]
             except Exception as e:
-                msg = f'Error initializing Vectors: {str(e)}'
+                msg = f"Error initializing Vectors: {str(e)}"
                 logging.critical(msg)
                 assert False, msg
             self.vs = vs_
 
         # initialize from single Vectors
         elif isinstance(vs_, Vectors):
-            self.vs =  vs_.vs
+            self.vs = vs_.vs
 
         else:
-            msg = 'Vectors must be constructed from Vectors, ndarray, or Tuples/List of floats/ints or Vectors'
+            msg = "Vectors must be constructed from Vectors, ndarray, or Tuples/List of floats/ints or Vectors"
             logging.critical(msg)
             assert False, msg
 
@@ -73,21 +80,23 @@ class Vectors():
         ns: npt.NDArray[np.float64] = np.linalg.norm(self.vs, axis=-1)
 
         if np.min(ns) < TOLERANCE:
-            logging.info(f"Encountered values close to zero in vector norm. Replacing with {TOLERANCE}")
+            logging.info(
+                f"Encountered values close to zero in vector norm. Replacing with {TOLERANCE}"
+            )
             ns[ns < TOLERANCE] = TOLERANCE
 
         self.vs = self.vs / np.expand_dims(ns, axis=-1)
 
     def cross(self, v2: Vectors) -> Vectors:
-        """ Cross product of a series of 2 or 3 dimensional vectors. All dimensions of vs must match."""
+        """Cross product of a series of 2 or 3 dimensional vectors. All dimensions of vs must match."""
 
         if self.vs.shape != v2.vs.shape:
-            msg = f'Cannot cross product different sized vectors: {self.vs.shape} {v2.vs.shape}.'
+            msg = f"Cannot cross product different sized vectors: {self.vs.shape} {v2.vs.shape}."
             logging.critical(msg)
             assert False, msg
 
         if not self.vs.shape[-1] in [2, 3]:
-            msg = f'Cannot cross product vectors of size: {self.vs.shape[-1]}. Must be 2 or 3.'
+            msg = f"Cannot cross product vectors of size: {self.vs.shape[-1]}. Must be 2 or 3."
             logging.critical(msg)
             assert False, msg
 
@@ -100,7 +109,7 @@ class Vectors():
         By default returns the counter clockwise vector, but passing ccw=False returns clockwise
         """
         if not self.vs.shape[-1] in [2, 3]:
-            msg = f'Cannot get perpendicular of vectors of size: {self.vs.shape[-1]}. Must be 2 or 3.'
+            msg = f"Cannot get perpendicular of vectors of size: {self.vs.shape[-1]}. Must be 2 or 3."
             logging.critical(msg)
             assert False, msg
 
@@ -115,7 +124,7 @@ class Vectors():
         return v_perp
 
     def average(self) -> Vectors:
-        """ Return the average of a collection of vectors, along the first axis"""
+        """Return the average of a collection of vectors, along the first axis"""
         return Vectors(np.mean(self.vs, axis=0))
 
     def copy(self) -> Vectors:
@@ -137,14 +146,14 @@ class Vectors():
 
     def __sub__(self, other: Vectors) -> Vectors:
         if self.vs.shape != other.vs.shape:
-            msg = 'Attempted to subtract Vectors with different dimensions'
+            msg = "Attempted to subtract Vectors with different dimensions"
             logging.critical(msg)
             assert False, msg
         return Vectors(np.subtract(self.vs, other.vs))
 
     def __add__(self, other: Vectors) -> Vectors:
         if self.vs.shape != other.vs.shape:
-            msg = 'Attempted to add Vectors with different dimensions'
+            msg = "Attempted to add Vectors with different dimensions"
             logging.critical(msg)
             assert False, msg
         return Vectors(np.add(self.vs, other.vs))

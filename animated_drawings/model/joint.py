@@ -16,7 +16,7 @@ class Joint(Transform):
         super().__init__(**kwargs)
 
     def joint_count(self) -> int:
-        """ Returns 1 + the number of Joint children in this joint's kinematic chain (recursive) """
+        """Returns 1 + the number of Joint children in this joint's kinematic chain (recursive)"""
         count: int = 1
         for c in self.get_children():
             if isinstance(c, Joint):
@@ -24,11 +24,13 @@ class Joint(Transform):
         return count
 
     def get_chain_worldspace_positions(self) -> List[float]:
-        """ Get xzy worldspace coordinates of all joints within the chain. """
+        """Get xzy worldspace coordinates of all joints within the chain."""
         self.update_transforms(update_ancestors=True)
         return self._get_chain_worldspace_positions(self, [])
 
-    def _get_chain_worldspace_positions(self, joint: Joint, position_list: List[float]) -> List[float]:
+    def _get_chain_worldspace_positions(
+        self, joint: Joint, position_list: List[float]
+    ) -> List[float]:
         position_list.extend(joint.get_world_position(update_ancestors=False))
         for c in joint.get_children():
             if not isinstance(c, Joint):
@@ -37,11 +39,13 @@ class Joint(Transform):
         return position_list
 
     def get_chain_joint_names(self):
-        """ Traverse through joint in depth-first order and return names of joints in the order they are visited. """
+        """Traverse through joint in depth-first order and return names of joints in the order they are visited."""
         joint_names: List[str] = []
         return self._get_chain_joint_names(self, joint_names)
 
-    def _get_chain_joint_names(self, joint: Joint, joint_name_list: List[str]) -> List[str]:
+    def _get_chain_joint_names(
+        self, joint: Joint, joint_name_list: List[str]
+    ) -> List[str]:
         joint_name_list.append(str(joint.name))
         for c in joint.get_children():
             if not isinstance(c, Joint):

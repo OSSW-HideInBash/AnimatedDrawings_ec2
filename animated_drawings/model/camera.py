@@ -12,7 +12,7 @@ class Camera(Transform):
     def __init__(
         self,
         pos: Union[Vectors, List[Union[float, int]]] = Vectors([0.0, 0.0, 0.0]),
-        fwd: Union[Vectors, List[Union[float, int]]] = Vectors([0.0, 0.0, 1.0])
+        fwd: Union[Vectors, List[Union[float, int]]] = Vectors([0.0, 0.0, 1.0]),
     ):
         super().__init__()
 

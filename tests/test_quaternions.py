@@ -24,29 +24,41 @@ def test_from_angle_axis():
     angle = np.array([1.0])
     axis = Vectors(np.array([1.0, 1.0, 1.0]))
     q6 = Quaternions.from_angle_axis(angle, axis)
-    assert np.allclose(q6.qs,  np.array(
-        [[0.87758256, 0.27679646, 0.27679646, 0.27679646]]))
+    assert np.allclose(
+        q6.qs, np.array([[0.87758256, 0.27679646, 0.27679646, 0.27679646]])
+    )
 
 
 def test_multiple_from_angle_axis():
     angles = np.array([[1.0], [1.0]])
-    axis = Vectors(
-        np.array([[1.0, 1.0, 1.0], [1.0, 1.0, 1.0]], dtype=np.float32))
+    axis = Vectors(np.array([[1.0, 1.0, 1.0], [1.0, 1.0, 1.0]], dtype=np.float32))
     q1 = Quaternions.from_angle_axis(angles, axis)
-    assert np.allclose(q1.qs,  np.array([
-        [0.87758256, 0.27679646, 0.27679646, 0.27679646],
-        [0.87758256, 0.27679646, 0.27679646, 0.27679646]]))
+    assert np.allclose(
+        q1.qs,
+        np.array(
+            [
+                [0.87758256, 0.27679646, 0.27679646, 0.27679646],
+                [0.87758256, 0.27679646, 0.27679646, 0.27679646],
+            ]
+        ),
+    )
 
 
 def test_to_rotation_matrix():
     angles = np.array([[np.pi / 2]])
     axis = Vectors(np.array([1.0, 0.0, 0.0], dtype=np.float32))
     q1 = Quaternions.from_angle_axis(angles, axis)
-    assert np.allclose(q1.to_rotation_matrix(), np.array([
-        [1.000000e+00,  0.000000e+00,  0.000000e+00,  0.000000e+00],
-        [0.000000e+00,  0.000000e+00, -1.000000e+00,  0.000000e+00],
-        [0.000000e+00,  1.000000e+00,  0.000000e+00,  0.000000e+00],
-        [0.000000e+00,  0.000000e+00,  0.000000e+00,  1.000000e+00]]))
+    assert np.allclose(
+        q1.to_rotation_matrix(),
+        np.array(
+            [
+                [1.000000e00, 0.000000e00, 0.000000e00, 0.000000e00],
+                [0.000000e00, 0.000000e00, -1.000000e00, 0.000000e00],
+                [0.000000e00, 1.000000e00, 0.000000e00, 0.000000e00],
+                [0.000000e00, 0.000000e00, 0.000000e00, 1.000000e00],
+            ]
+        ),
+    )
 
 
 def test_from_rotation_matrix():

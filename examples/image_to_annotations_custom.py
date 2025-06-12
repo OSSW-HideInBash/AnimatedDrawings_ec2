@@ -19,7 +19,7 @@ import os
 os.environ["PYOPENGL_PLATFORM"] = "osmesa"
 
 
-def fill_skeleton(skeleton_json_loc):
+def fill_skeleton(skeleton_json_loc, height, width):
     """
     Loads skeleton data from a JSON file and returns a list of joints.
     Each joint is a dict with keys: loc, name, parent.
@@ -28,18 +28,17 @@ def fill_skeleton(skeleton_json_loc):
         data = json.load(f)
     skeleton = []
     for joint in data["skeleton"]:
-        skeleton.append({
-            "loc": joint["loc"],
-            "name": joint["name"],
-            "parent": joint["parent"]
-        })
+        #원본 이미지 크기에 맞게 스케일링!
+        loc = joint["loc"]
+        scaled_loc = [loc[0] * width, loc[1] * height]
+        skeleton.append(
+            {"loc": scaled_loc, "name": joint["name"], "parent": joint["parent"]}
+        )
     return skeleton
 
 
 def image_to_annotations(
-    img_fn: str,
-    out_dir: str,
-    skeleton_json_loc: str
+    img_fn: str, out_dir: str, skeleton_json_loc: str
 ) -> None:
     """
     Given the RGB image located at img_fn, runs detection, segmentation,
@@ -66,11 +65,7 @@ def image_to_annotations(
     if np.max(img.shape) > 1000:
         scale = 1000 / np.max(img.shape)
         img = cv2.resize(
-            img,
-            (
-                round(scale * img.shape[1]),
-                round(scale * img.shape[0])
-            )
+            img, (round(scale * img.shape[1]), round(scale * img.shape[0]))
         )
 
     img_b = cv2.imencode(".png", img)[1].tobytes()
@@ -78,7 +73,7 @@ def image_to_annotations(
     resp = requests.post(
         "http://localhost:8080/predictions/drawn_humanoid_detector",
         files=request_data,
-        verify=False
+        verify=False,
     )
     if resp is None or resp.status_code >= 300:
         raise Exception(
@@ -88,9 +83,11 @@ def image_to_annotations(
 
     detection_results = json.loads(resp.content)
 
-    if (isinstance(detection_results, dict) and
-            "code" in detection_results.keys() and
-            detection_results["code"] == 404):
+    if (
+        isinstance(detection_results, dict)
+        and "code" in detection_results.keys()
+        and detection_results["code"] == 404
+    ):
         assert False, (
             "Error performing detection. Check that "
             "drawn_humanoid_detector.mar was properly downloaded. "
@@ -114,12 +111,7 @@ def image_to_annotations(
     l, t, r, b = [round(x) for x in bbox]
 
     with open(str(outdir / "bounding_box.yaml"), "w") as f:
-        yaml.dump({
-            "left": l,
-            "top": t,
-            "right": r,
-            "bottom": b
-        }, f)
+        yaml.dump({"left": l, "top": t, "right": r, "bottom": b}, f)
 
     cropped = img[t:b, l:r]
     mask = segment(cropped)
@@ -128,7 +120,7 @@ def image_to_annotations(
     resp = requests.post(
         "http://localhost:8080/predictions/drawn_humanoid_pose_estimator",
         files=data_file,
-        verify=False
+        verify=False,
     )
     if resp is None or resp.status_code >= 300:
         raise Exception(
@@ -138,9 +130,11 @@ def image_to_annotations(
 
     pose_results = json.loads(resp.content)
 
-    if (isinstance(pose_results, dict) and
-            "code" in pose_results.keys() and
-            pose_results["code"] == 404):
+    if (
+        isinstance(pose_results, dict)
+        and "code" in pose_results.keys()
+        and pose_results["code"] == 404
+    ):
         assert False, (
             "Error performing pose estimation. Check that "
             "drawn_humanoid_pose_estimator.mar was properly downloaded. "
@@ -149,12 +143,8 @@ def image_to_annotations(
 
     if len(pose_results) == 0:
         msg = (
-            (
-                (
-                    "Could not detect any skeletons within the character "
-                    "bounding box. Expected exactly 1. Aborting."
-                )
-            )
+            "Could not detect any skeletons within the character "
+            "bounding box. Expected exactly 1. Aborting."
         )
         logging.critical(msg)
         assert False, msg
@@ -167,12 +157,15 @@ def image_to_annotations(
         logging.critical(msg)
         assert False, msg
 
-    skeleton = fill_skeleton(skeleton_json_loc)
+    # 함수에 height, width 넣음
+    skeleton = fill_skeleton(
+        skeleton_json_loc, cropped.shape[0], cropped.shape[1]
+    )
 
     char_cfg = {
         "skeleton": skeleton,
         "height": cropped.shape[0],
-        "width": cropped.shape[1]
+        "width": cropped.shape[1],
     }
 
     cropped = cv2.cvtColor(cropped, cv2.COLOR_BGR2BGRA)
@@ -188,8 +181,14 @@ def image_to_annotations(
         name = joint["name"]
         cv2.circle(joint_overlay, (int(x), int(y)), 5, (0, 0, 0), 5)
         cv2.putText(
-            joint_overlay, name, (int(x), int(y + 15)),
-            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1, 2
+            joint_overlay,
+            name,
+            (int(x), int(y + 15)),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.5,
+            (0, 0, 0),
+            1,
+            2,
         )
     cv2.imwrite(str(outdir / "joint_overlay.png"), joint_overlay)
 
@@ -198,12 +197,7 @@ def segment(img: np.ndarray):
     """Threshold and segment the character from the background."""
     img = np.min(img, axis=2)
     img = cv2.adaptiveThreshold(
-        img,
-        255,
-        cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-        cv2.THRESH_BINARY,
-        115,
-        8
+        img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 115, 8
     )
     img = cv2.bitwise_not(img)
 
@@ -259,5 +253,5 @@ if __name__ == "__main__":
 
     img_fn = sys.argv[1]
     out_dir = sys.argv[2]
-    skeleton_json_loc = sys.argv[3]
+    skeleton_json_loc = sys.argv[4]
     image_to_annotations(img_fn, out_dir, skeleton_json_loc)

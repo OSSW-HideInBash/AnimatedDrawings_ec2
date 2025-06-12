@@ -7,7 +7,7 @@ from pkg_resources import resource_filename
 
 
 def test_bvh_from_file():
-    bvh_fn = resource_filename(__name__, 'test_bvh_files/zombie.bvh')
+    bvh_fn = resource_filename(__name__, "test_bvh_files/zombie.bvh")
     b = BVH.from_file(bvh_fn)
 
     # was the skeleton built correctly?

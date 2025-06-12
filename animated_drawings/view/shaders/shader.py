@@ -11,7 +11,7 @@ class Shader:
 
     @staticmethod
     def _compile_shader(src: str, shader_type):
-        with open(src, 'r') as f:
+        with open(src, "r") as f:
             src = f.read()
         shader = GL.glCreateShader(shader_type)
 
@@ -20,11 +20,13 @@ class Shader:
 
         status: bool = GL.glGetShaderiv(shader, GL.GL_COMPILE_STATUS)
         if not status:
-            log = GL.glGetShaderInfoLog(shader).decode('ascii')
+            log = GL.glGetShaderInfoLog(shader).decode("ascii")
 
-            src = '\n'.join([f'{idx + 1}: {l}' for idx, l in enumerate(src.splitlines())])
+            src = "\n".join(
+                [f"{idx + 1}: {l}" for idx, l in enumerate(src.splitlines())]
+            )
 
-            msg = f'Compile failed for {shader_type}\n{log}\n{src}'
+            msg = f"Compile failed for {shader_type}\n{log}\n{src}"
             logging.critical(msg)
             assert False, msg
 
@@ -36,7 +38,7 @@ class Shader:
         frag = self._compile_shader(fragment_source, GL.GL_FRAGMENT_SHADER)
 
         if not (vert and frag):
-            msg = 'Error compiling shaders'
+            msg = "Error compiling shaders"
             logging.critical(msg)
             assert False, msg
 

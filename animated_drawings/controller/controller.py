@@ -14,7 +14,7 @@ from animated_drawings.view.view import View
 from animated_drawings.config import ControllerConfig
 
 
-class Controller():
+class Controller:
     """
     Base Controller class from which all other Controllers will be derived.
     Controllers are responsible for:
@@ -30,11 +30,11 @@ class Controller():
         self.view: Optional[View] = None
 
     def set_scene(self, scene: Scene) -> None:
-        """ Sets the scene attached to this controller."""
+        """Sets the scene attached to this controller."""
         self.scene = scene
 
     def set_view(self, view: View) -> None:
-        """ Sets the view attached to this controller."""
+        """Sets the view attached to this controller."""
         self.view = view
 
     @abstractmethod
@@ -63,18 +63,18 @@ class Controller():
 
     @abstractmethod
     def _finish_run_loop_iteration(self) -> None:
-        """Subclass and add steps necessary before starting next iteration of run loop. """
+        """Subclass and add steps necessary before starting next iteration of run loop."""
 
     @abstractmethod
     def _prep_for_run_loop(self) -> None:
-        """Subclass and add anything necessary to do immediately prior to run loop. """
+        """Subclass and add anything necessary to do immediately prior to run loop."""
 
     @abstractmethod
     def _cleanup_after_run_loop(self) -> None:
-        """Subclass and add anything necessary to do after run loop has finished. """
+        """Subclass and add anything necessary to do after run loop has finished."""
 
     def run(self) -> None:
-        """ The run loop. Subclassed controllers should overload and define functionality for each step in this function."""
+        """The run loop. Subclassed controllers should overload and define functionality for each step in this function."""
 
         self._prep_for_run_loop()
         while not self._is_run_over():
@@ -88,17 +88,31 @@ class Controller():
         self._cleanup_after_run_loop()
 
     @staticmethod
-    def create_controller(controller_cfg: ControllerConfig, scene: Scene, view: View) -> Controller:
-        """ Takes in a controller dictionary from mvc config file, scene, and view. Constructs and return appropriate controller."""
-        if controller_cfg.mode == 'video_render':
-            from animated_drawings.controller.video_render_controller import VideoRenderController
-            return VideoRenderController(controller_cfg, scene, view,)
-        elif controller_cfg.mode == 'interactive':
-            from animated_drawings.controller.interactive_controller import InteractiveController
+    def create_controller(
+        controller_cfg: ControllerConfig, scene: Scene, view: View
+    ) -> Controller:
+        """Takes in a controller dictionary from mvc config file, scene, and view. Constructs and return appropriate controller."""
+        if controller_cfg.mode == "video_render":
+            from animated_drawings.controller.video_render_controller import (
+                VideoRenderController,
+            )
+
+            return VideoRenderController(
+                controller_cfg,
+                scene,
+                view,
+            )
+        elif controller_cfg.mode == "interactive":
+            from animated_drawings.controller.interactive_controller import (
+                InteractiveController,
+            )
             from animated_drawings.view.window_view import WindowView
-            assert isinstance(view, WindowView)  # for static analysis. checks elsewhere ensure this always passes
+
+            assert isinstance(
+                view, WindowView
+            )  # for static analysis. checks elsewhere ensure this always passes
             return InteractiveController(controller_cfg, scene, view)
         else:
-            msg = f'Unknown controller mode specified: {controller_cfg.mode}'
+            msg = f"Unknown controller mode specified: {controller_cfg.mode}"
             logging.critical(msg)
             assert False, msg

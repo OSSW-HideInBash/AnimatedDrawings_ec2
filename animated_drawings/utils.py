@@ -25,10 +25,10 @@ def resolve_ad_filepath(file_name: str, file_type: str) -> Path:
         return Path.joinpath(Path.cwd(), file_name)
     elif Path(resource_filename(__name__, file_name)).exists():
         return Path(resource_filename(__name__, file_name))
-    elif Path(resource_filename(__name__, str(Path('..', file_name)))):
-        return Path(resource_filename(__name__, str(Path('..', file_name))))
+    elif Path(resource_filename(__name__, str(Path("..", file_name)))):
+        return Path(resource_filename(__name__, str(Path("..", file_name))))
 
-    msg = f'Could not find the {file_type} specified: {file_name}'
+    msg = f"Could not find the {file_type} specified: {file_name}"
     logging.critical(msg)
     assert False, msg
 
@@ -38,7 +38,7 @@ def read_background_image(file_name: str) -> npt.NDArray[np.uint8]:
     Given path to input image file, opens it, flips it based on EXIF tags, if present, and returns image with proper orientation.
     """
     # Check the file path
-    file_path = resolve_ad_filepath(file_name, 'background_image')
+    file_path = resolve_ad_filepath(file_name, "background_image")
 
     # Open the image and rotate as needed depending upon exif tag
     image = Image.open(str(file_path))

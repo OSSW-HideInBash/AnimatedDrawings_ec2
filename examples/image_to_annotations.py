@@ -66,14 +66,10 @@ def image_to_annotations(img_fn: str, out_dir: str) -> None:
         and "code" in detection_results.keys()
         and detection_results["code"] == 404
     ):
-        assert (
-            False
-        ), (
-            (
-                "Error performing detection. Check that "
-                "drawn_humanoid_detector.mar was properly downloaded. "
-                f"Response: {detection_results}"
-            )
+        assert False, (
+            "Error performing detection. Check that "
+            "drawn_humanoid_detector.mar was properly downloaded. "
+            f"Response: {detection_results}"
         )
 
     detection_results.sort(key=lambda x: x["score"], reverse=True)
@@ -117,9 +113,7 @@ def image_to_annotations(img_fn: str, out_dir: str) -> None:
         and "code" in pose_results.keys()
         and pose_results["code"] == 404
     ):
-        assert (
-            False
-        ), (
+        assert False, (
             "Error performing pose estimation. Check that "
             "drawn_humanoid_pose_estimator.mar was properly downloaded. "
             f"Response: {pose_results}"

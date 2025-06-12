@@ -17,7 +17,7 @@ class Scene(Transform, TimeManager):
     """
 
     def __init__(self, cfg: SceneConfig) -> None:
-        """ Takes in the scene dictionary from an mvc config file and prepares the scene. """
+        """Takes in the scene dictionary from an mvc config file and prepares the scene."""
         super().__init__()
 
         # add floor if required
@@ -43,7 +43,7 @@ class Scene(Transform, TimeManager):
         self._progress_time(self, delta_t)
 
     def _progress_time(self, t: Transform, delta_t: float) -> None:
-        """ Recursively calls tick() on all TimeManager objects. """
+        """Recursively calls tick() on all TimeManager objects."""
 
         if isinstance(t, TimeManager):
             t.tick(delta_t)
